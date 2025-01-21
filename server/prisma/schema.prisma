@@ -3,10 +3,11 @@
 
 generator client {
   provider = "prisma-client-js"
+  seed = "ts-node prisma/seeds/seed.ts"
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 

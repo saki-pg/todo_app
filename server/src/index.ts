@@ -9,10 +9,11 @@ import cors from "cors";
 
 const app: Express = express();
 const PORT = 8080;
+const prisma = new PrismaClient();
 
 app.use(express.json());
-app.use(cors());
-const prisma = new PrismaClient();
+app.use(cors({ methods: ["GET", "POST", "PUT", "DELETE"] }));
+
 
 app.get("/allTodos", async (req: Request, res: Response) => {
   const allTodos = await prisma.todo.findMany();
@@ -65,4 +66,9 @@ app.delete("/deleteTodo/:id", async (req: Request, res: Response) => {
   }
 });
 
-app.listen(PORT, () => console.log("server is running🚀"));
+process.on("SIGINT", async () => {
+  await prisma.$disconnect();
+  process.exit(0);
+})
+
+app.listen(PORT, () => console.log(`server is running on port ${PORT}🚀`));

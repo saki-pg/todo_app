@@ -2,7 +2,7 @@ import
   React,
   { useState }
 from "react";
-import { TodoType } from "../app/types";
+import { TodoType } from "@/app/types";
 import { useTodos } from "@/app/hooks/useTodos";
 import { API_URL } from "@/constants/url";
 
@@ -121,5 +121,4 @@ export const Todo = ({ todo }: TodoProps) => {
     </div>
   )
 };
-
 export default Todo;

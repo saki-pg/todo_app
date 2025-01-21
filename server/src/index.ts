@@ -16,19 +16,45 @@ app.use(cors({ methods: ["GET", "POST", "PUT", "DELETE"] }));
 
 
 app.get("/allTodos", async (req: Request, res: Response) => {
-  const allTodos = await prisma.todo.findMany();
-  return res.json(allTodos);
+  try {
+    const todos = await prisma.todo.findMany({
+      include: {
+        category: true,
+      },
+    });
+
+    res.json(todos.map(todo => ({
+      id: todo.id,
+      title: todo.title,
+      isCompleted: todo.isCompleted,
+      category: { id: todo.categoryId, name: todo.category.name }
+    })));
+
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({error: "Failed to fetch todos" })
+  }
 });
 
 app.post("/createTodo", async (req: Request, res: Response) => {
   console.log(req.body);
 
   try {
-    const { title, isCompleted } = req.body;
+    const {
+      title,
+      isCompleted,
+      categoryId
+    } = req.body;
+
     const createTodo = await prisma.todo.create({
       data: {
         title,
         isCompleted,
+        category: {
+          connect: {
+            id: categoryId,
+          }
+        }
       }
     });
     return res.json(createTodo);

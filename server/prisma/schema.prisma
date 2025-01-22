@@ -1,9 +1,6 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
   provider = "prisma-client-js"
-  seed = "ts-node prisma/seeds/seed.ts"
+  seed = "ts-node --esm --project tsconfig.json prisma/seeds/seed.ts"
 }
 
 datasource db {
@@ -15,4 +12,16 @@ model Todo {
   id Int @id @default(autoincrement())
   title String
   isCompleted Boolean @default(false)
+  categoryId Int
+  category Category @relation(fields: [categoryId], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime? @updatedAt
+}
+
+model Category {
+  id Int @id @default(autoincrement())
+  name String
+  todos Todo[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime? @updatedAt
 }

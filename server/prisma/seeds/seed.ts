@@ -1,5 +1,4 @@
 import {
-  Prisma,
   PrismaClient
 } from "@prisma/client";
 
@@ -19,26 +18,24 @@ async function createSeedData() {
       skipDuplicates: true,
     });
 
-    const todosData: Prisma.TodoCreateManyInput[] = [...Array(10)].map((_, i) => {
-      const id = i + 1;
 
-      const getCategoryIds = (id: number) => {
-        if (id <= 3) return 1
-        if (id <= 6) return 2
-        return 3
-      }
+    for (let i = 1; i <= 10; i++) {
+      let connectCategoryIds: number[] = [];
+      if (i <= 3) connectCategoryIds = [1];
+      else if (i <= 6) connectCategoryIds = [2];
+      else connectCategoryIds = [3];
 
-      return {
-        title: `sample${id}`,
-        isCompleted: false,
-        categoryId: getCategoryIds(id),
-      };
-    });
-
-    await prisma.todo.createMany({
-      data: todosData,
-      skipDuplicates: true,
-    });
+      const categoryIds = [1, 2]
+      await prisma.todo.create({
+        data: {
+          title: `sample${i}`,
+          isCompleted: false,
+          categories: {
+            connect: categoryIds.map((catId) => ({id: catId})),
+          },
+        },
+      });
+    }
     console.log("Seed data created successfully.");
   } catch (error) {
     console.error("Error seeding data:", error);

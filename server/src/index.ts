@@ -19,17 +19,20 @@ app.get("/allTodos", async (req: Request, res: Response) => {
   try {
     const todos = await prisma.todo.findMany({
       include: {
-        category: true,
+        categories: true,
       },
     });
 
-    res.json(todos.map(todo => ({
-      id: todo.id,
-      title: todo.title,
-      isCompleted: todo.isCompleted,
-      category: { id: todo.categoryId, name: todo.category.name }
-    })));
-
+    res.json(todos.map((todo) => ({
+        id: todo.id,
+        title: todo.title,
+        isCompleted: todo.isCompleted,
+        categories: todo.categories.map((cat) => ({
+          id: cat.id,
+          name: cat.name,
+        })),
+      }))
+    );
   } catch (error) {
     console.error(error);
     res.status(500).json({error: "Failed to fetch todos" })
@@ -37,26 +40,26 @@ app.get("/allTodos", async (req: Request, res: Response) => {
 });
 
 app.post("/createTodo", async (req: Request, res: Response) => {
-  console.log(req.body);
-
   try {
     const {
       title,
       isCompleted,
-      categoryId
+      categoryIds
     } = req.body;
 
     const createTodo = await prisma.todo.create({
       data: {
         title,
         isCompleted,
-        category: {
-          connect: {
-            id: categoryId,
-          }
-        }
-      }
+        categories: {
+          connect: categoryIds.map((id: number) => ({ id })),
+        },
+      },
+      include: {
+        categories: true,
+      },
     });
+
     return res.json(createTodo);
   } catch(e) {
     return res.status(400).json(e);
@@ -66,12 +69,23 @@ app.post("/createTodo", async (req: Request, res: Response) => {
 app.put("/editTodo/:id", async (req: Request, res: Response) => {
   try {
     const id = Number(req.params.id);
-    const { title, isCompleted } = req.body;
+    const {
+      title,
+      isCompleted,
+      categoryIds
+    } = req.body;
+
     const editTodo = await prisma.todo.update({
       where: { id },
       data: {
         title,
         isCompleted,
+        categories: {
+          set: categoryIds.map((catId: number) => ({ id: catId })),
+        },
+      },
+      include: {
+        categories: true,
       },
     });
     return res.json(editTodo);

@@ -12,8 +12,7 @@ model Todo {
   id Int @id @default(autoincrement())
   title String
   isCompleted Boolean @default(false)
-  categoryId Int
-  category Category @relation(fields: [categoryId], references: [id])
+  categories Category[]
   createdAt DateTime @default(now())
   updatedAt DateTime? @updatedAt
 }

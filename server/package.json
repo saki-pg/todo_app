@@ -30,6 +30,6 @@
     "nodemon": "3.1.9"
   },
   "prisma": {
-    "seed": "TS_NODE_PROJECT=../tsconfig.json ts-node --esm prisma/seeds/seed.ts"
+    "seed": "npx ts-node --esm --project tsconfig.json prisma/seeds/seed.ts"
   }
 }

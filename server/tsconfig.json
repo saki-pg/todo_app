@@ -1,18 +1,18 @@
 {
   "compilerOptions": {
     "target": "es2020",
-    "esModuleInterop": true,
-    "forceConsistentCasingInFileNames": true,
-    "skipLibCheck": true,
-    "strict": true,
-    "module": "ESNext",
+    "esModuleInterop": true,                             /* Emit additional JavaScript to ease support for importing CommonJS modules. This enables 'allowSyntheticDefaultImports' for type compatibility. */
+    "forceConsistentCasingInFileNames": true,            /* Ensure that casing is correct in imports. */
+    "skipLibCheck": true,                                 /* Skip type checking all .d.ts files. */
+    "strict": true,                                      /* Enable all strict type-checking options. */
+    "module": "commonjs",
     "moduleResolution": "node",
     "allowSyntheticDefaultImports": true,
     "outDir": "./dist"
-  },
+  } ,
   "include": [
     "prisma/seeds/**/*.ts",
-    "src/**/*.ts"
+    "test/**/*"
   ],
   "exclude": ["node_modules"]
 }

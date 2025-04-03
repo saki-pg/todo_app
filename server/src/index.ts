@@ -1,4 +1,6 @@
 import express from "express";
+import todoRouter from "./routes/todoRouter";
+
 import type {
   Express,
   Request,
@@ -8,12 +10,12 @@ import { PrismaClient } from "@prisma/client";
 import cors from "cors";
 
 const app: Express = express();
-const PORT = 8080;
-const prisma = new PrismaClient();
-
 app.use(express.json());
 app.use(cors({ methods: ["GET", "POST", "PUT", "DELETE"] }));
+app.use(todoRouter);
+const prisma = new PrismaClient();
 
+export default app;
 
 app.get("/allTodos", async (req: Request, res: Response) => {
   try {
@@ -139,6 +141,4 @@ app.delete("/deleteTodo/:id", async (req: Request, res: Response) => {
 process.on("SIGINT", async () => {
   await prisma.$disconnect();
   process.exit(0);
-})
-
-app.listen(PORT, () => console.log(`server is running on port ${PORT}🚀`));
+});

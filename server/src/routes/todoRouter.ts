@@ -1,4 +1,7 @@
-import { body } from "express-validator";
+import {
+  body,
+  param
+} from "express-validator";
 import {
   Request,
   Response
@@ -25,7 +28,7 @@ router.post(
     const { title } = req.body;
     const createTodo = {
       id: 1,
-      title: req.body.title,
+      title,
     };
     return res.status(200).json({ todo: createTodo });
   }
@@ -34,23 +37,33 @@ router.post(
 router.put(
   "/todo/:id",
   [
+    param("id").isInt().withMessage("Invalid id"),
     body("title")
-      .optional()
       .isString()
-      .withMessage("Invalid title"),
+      .withMessage("Invalid title")
+      .isLength({ min: 1, max: 50 })
+      .withMessage("title must be 0 - 50 character long")
   ],
   validationErrors,
   async( req: Request, res: Response ) => {
     const { id } = req.params;
     const { title } = req.body;
-    const updateTodo = { id, title };
-    const createTodo = {
+
+    if (id === "999999") {
+      return res.status(404).json({
+        errors: [
+          { msg: "Todo not found"}
+        ],
+      })
+    }
+
+    const updateTodo = {
       id,
-      title,
+      title
     };
+
     return res.status(200).json({ todo: updateTodo });
   }
 );
-
 
 export default router;

@@ -1,6 +1,7 @@
 import {
   body,
-  param
+  param,
+  query
 } from "express-validator";
 import {
   Request,
@@ -8,8 +9,50 @@ import {
 } from "express";
 import { Router } from "express";
 import { validationErrors } from "../middlewares/validation";
+import { PrismaClient } from "@prisma/client";
 
 const router = Router();
+const prisma = new PrismaClient();
+
+router.get(
+  "/todos",
+[
+  query("paginationPageNumber")
+    .exists()
+    .withMessage("paginationPageNumber is missing")
+    .isInt({ min: 1 })
+    .withMessage("Invalid paginationPageNumber"),
+  query("itemsCountPerPaginationPage")
+    .exists()
+    .withMessage("itemsCountPerPaginationPage is missing")
+    .isInt({ min: 1 })
+    .withMessage("Invalid itemsCountPerPaginationPage"),
+  query("isCompleted")
+    .optional()
+    .isBoolean()
+    .withMessage("Invalid isCompleted"),
+  ],
+  validationErrors,
+
+  async( req: Request, res: Response ) => {
+    try {
+      const paginationPageNumber = parseInt(req.query.paginationPageNumber as string, 10);
+      const itemsCountPerPaginationPage = parseInt(req.query.itemsCountPerPaginationPage as string, 10);
+      const isCompleted = req.query.isCompleted ? req.query.isCompleted === "true" : undefined;
+
+      const todos = await prisma.todo.findMany({
+        where: isCompleted !== undefined ? { isCompleted } : {},
+        skip: (paginationPageNumber - 1) * itemsCountPerPaginationPage,
+        take: itemsCountPerPaginationPage,
+      });
+
+      return res.status(200).json({todos});
+    } catch (error) {
+      console.error(error);
+      return res.status(500).json({error: "Failed to fetch todos"});
+    }
+  }
+);
 
 router.post(
   "/todo",
@@ -25,12 +68,19 @@ router.post(
   validationErrors,
 
   async( req: Request, res: Response ) => {
-    const { title } = req.body;
-    const createTodo = {
-      id: 1,
-      title,
-    };
-    return res.status(200).json({ todo: createTodo });
+    try {
+      const { title } = req.body;
+      const createTodo = await prisma.todo.create({
+        data: {
+          title,
+          isCompleted: false
+        }
+      });
+      return res.status(200).json({ todo: createTodo });
+    } catch (error) {
+      console.error(error);
+      return res.status(500).json({error: "Failed to create todo"});
+      }
   }
 );
 

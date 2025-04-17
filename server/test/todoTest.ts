@@ -1,6 +1,21 @@
 import app from "../src/index";
 import request from "supertest";
 
+describe("GET /todo", () => {
+  it("Should return a paginated list of todos", async () => {
+    const res = await request(app)
+      .get("/todos")
+      .query({
+        paginationPageNumber: 1,
+        itemsCountPerPaginationPage: 10,
+        isCompleted: true,
+      });
+
+    expect(res.status).toBe(200);
+    expect(Array.isArray(res.body.todos)).toBe(true);
+  });
+});
+
 describe("POST /todo", () => {
   it("Should create todo", async () => {
     const res = await request(app)

@@ -1,6 +1,12 @@
 import app from "../src/index";
 import request from "supertest";
 
+type Todo = {
+  id: number;
+  title: string;
+  isCompleted?: boolean;
+}
+
 describe("GET /todo", () => {
   it("Should return a paginated list of todos", async () => {
     const res = await request(app)
@@ -14,6 +20,73 @@ describe("GET /todo", () => {
     expect(res.status).toBe(200);
     expect(Array.isArray(res.body.todos)).toBe(true);
   });
+
+  it("Should filter isCompleted=true", async () => {
+    const res = await request(app)
+      .get("/todos")
+      .query({
+        paginationPageNumber: 1,
+        itemsCountPerPaginationPage: 10,
+        isCompleted: true,
+      });
+
+    expect(res.status).toBe(200);
+    expect(Array.isArray(res.body.todos)).toBe(true);
+    expect(res.body.todos.every((todo: Todo) => todo.isCompleted === true)).toBe(true);
+    expect(res.body.todos.length).toBeGreaterThan(0);
+  });
+
+  it("Should filter isCompleted=false", async () => {
+    const res = await request(app)
+      .get("/todos")
+      .query({
+        paginationPageNumber: 1,
+        itemsCountPerPaginationPage: 10,
+        isCompleted: false,
+      });
+
+    expect(res.status).toBe(200);
+    expect(Array.isArray(res.body.todos)).toBe(true);
+    expect(res.body.todos.every((todo: Todo) => todo.isCompleted === false)).toBe(true);
+  })
+
+  it("Should return all todos when isCompleted is not specified", async () => {
+    const res = await request(app)
+      .get("/todos")
+      .query({
+        paginationPageNumber: 1,
+        itemsCountPerPaginationPage: 10,
+      });
+
+    expect(res.status).toBe(200);
+    expect(Array.isArray(res.body.todos)).toBe(true);
+    expect(
+      res.body.todos.some((todo: Todo) => todo.isCompleted === true) ||
+      res.body.todos.some((todo: Todo) => todo.isCompleted === false)
+    ).toBe(true);
+  });
+
+  it("Should paginate correctly", async () => {
+    const res1 = await request(app)
+      .get("/todos")
+      .query({
+        paginationPageNumber: 1,
+        itemsCountPerPaginationPage: 10,
+      });
+
+    const res2 = await request(app)
+      .get("/todos")
+      .query({
+        paginationPageNumber: 2,
+        itemsCountPerPaginationPage: 10,
+      });
+
+    expect(res1.status).toBe(200);
+    expect(res2.status).toBe(200);
+    expect(res1.body.todos.length).toBeLessThanOrEqual(10);
+    expect(res2.body.todos.length).toBeLessThanOrEqual(10);
+    expect(res1.body.todos).not.toEqual(res2.body.todos);
+  })
 });
 
 describe("POST /todo", () => {

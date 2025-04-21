@@ -38,7 +38,9 @@ router.get(
     try {
       const paginationPageNumber = parseInt(req.query.paginationPageNumber as string, 10);
       const itemsCountPerPaginationPage = parseInt(req.query.itemsCountPerPaginationPage as string, 10);
-      const isCompleted = req.query.isCompleted ? req.query.isCompleted === "true" : undefined;
+      const isCompleted = req.query.isCompleted === undefined
+        ? undefined
+        : req.query.isCompleted === "true";
 
       const todos = await prisma.todo.findMany({
         where: isCompleted !== undefined ? { isCompleted } : {},

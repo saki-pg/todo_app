@@ -4,7 +4,7 @@ import request from "supertest";
 type Todo = {
   id: number;
   title: string;
-  isCompleted?: boolean;
+  isCompleted: boolean;
 }
 
 describe("GET /todo", () => {
@@ -51,19 +51,37 @@ describe("GET /todo", () => {
   })
 
   it("Should return all todos when isCompleted is not specified", async () => {
-    const res = await request(app)
+    const allRes = await request(app)
       .get("/todos")
       .query({
         paginationPageNumber: 1,
-        itemsCountPerPaginationPage: 10,
+        itemsCountPerPaginationPage: 100,
       });
 
-    expect(res.status).toBe(200);
-    expect(Array.isArray(res.body.todos)).toBe(true);
+    const trueRes = await request(app)
+      .get("/todos")
+      .query({
+        paginationPageNumber: 1,
+        itemsCountPerPaginationPage: 100,
+        isCompleted: true,
+      });
+
+    const falseRes = await request(app)
+      .get("/todos")
+      .query({
+        paginationPageNumber: 1,
+        itemsCountPerPaginationPage: 100,
+        isCompleted: false,
+      });
+
+    expect(allRes.status).toBe(200);
+    expect(trueRes.status).toBe(200);
+    expect(falseRes.status).toBe(200);
+    expect(Array.isArray(allRes.body.todos)).toBe(true);
+
     expect(
-      res.body.todos.some((todo: Todo) => todo.isCompleted === true) ||
-      res.body.todos.some((todo: Todo) => todo.isCompleted === false)
-    ).toBe(true);
+      allRes.body.todos.length)
+      .toBe(trueRes.body.todos.length + falseRes.body.todos.length);
   });
 
   it("Should paginate correctly", async () => {

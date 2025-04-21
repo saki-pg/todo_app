@@ -21,26 +21,27 @@ router.get(
     .exists()
     .withMessage("paginationPageNumber is missing")
     .isInt({ min: 1 })
-    .withMessage("Invalid paginationPageNumber"),
+    .withMessage("Invalid paginationPageNumber")
+    .toInt(),
   query("itemsCountPerPaginationPage")
     .exists()
     .withMessage("itemsCountPerPaginationPage is missing")
     .isInt({ min: 1 })
-    .withMessage("Invalid itemsCountPerPaginationPage"),
+    .withMessage("Invalid itemsCountPerPaginationPage")
+    .toInt(),
   query("isCompleted")
     .optional()
     .isBoolean()
-    .withMessage("Invalid isCompleted"),
+    .withMessage("Invalid isCompleted")
+    .toBoolean(),
   ],
   validationErrors,
 
   async( req: Request, res: Response ) => {
     try {
-      const paginationPageNumber = parseInt(req.query.paginationPageNumber as string, 10);
-      const itemsCountPerPaginationPage = parseInt(req.query.itemsCountPerPaginationPage as string, 10);
-      const isCompleted = req.query.isCompleted === undefined
-        ? undefined
-        : req.query.isCompleted === "true";
+      const paginationPageNumber = Number(req.query.paginationPageNumber);
+      const itemsCountPerPaginationPage = Number(req.query.itemsCountPerPaginationPage);
+      const isCompleted = req.query.isCompleted as boolean | undefined;
 
       const todos = await prisma.todo.findMany({
         where: isCompleted !== undefined ? { isCompleted } : {},
